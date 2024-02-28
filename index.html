@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MathQuill Example</title>
+    <link rel="stylesheet" href="build/mathquill.css" />
+    <style>
+      .math-field {
+        border: 1px solid #ccc;
+        min-height: 30px;
+        padding: 5px;
+        margin-bottom: 5px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Type a math equation:</p>
+    <div id="math-fields">
+      <div class="math-field"></div>
+    </div>
+    <p>LaTeX of the equations:</p>
+    <textarea id="output" width="500" height="500"></textarea>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="build/mathquill.js"></script>
+    <script>
+      var MQ = MathQuill.getInterface(2); // for backcompat
+      var mathFieldsContainer = document.getElementById('math-fields');
+      var outputDiv = document.getElementById('output');
+
+      function createMathField(element) {
+        var mathField = MQ.MathField(element, {
+          spaceBehavesLikeTab: false, // configurable
+          handlers: {
+            edit: function () {
+              // useful event handlers
+              outputDiv.textContent = Array.from(mathFieldsContainer.children)
+                .map(function (child) {
+                  return MQ.MathField(child).latex();
+                })
+                .join('\\\\\n'); // Get current math fields in LaTeX
+            },
+            enter: function () {
+              var newField = document.createElement('div');
+              newField.className = 'math-field';
+              mathFieldsContainer.appendChild(newField);
+              createMathField(newField).focus();
+            },
+          },
+        });
+
+        element.addEventListener('keydown', function (e) {
+          if (e.key === 'ArrowUp') {
+            var prev = element.previousElementSibling;
+            if (prev) MQ.MathField(prev).focus();
+            e.preventDefault();
+          } else if (e.key === 'ArrowDown') {
+            var next = element.nextElementSibling;
+            if (next) MQ.MathField(next).focus();
+            e.preventDefault();
+          }
+        });
+
+        return mathField;
+      }
+
+      createMathField(mathFieldsContainer.children[0]);
+    </script>
+  </body>
+</html>
